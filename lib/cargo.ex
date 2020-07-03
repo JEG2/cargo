@@ -4,14 +4,22 @@ defmodule Cargo do
   """
 
   def start(_type, _args) do
+    Application.get_env(:cargo, :headless)
+    |> children
+    |> Supervisor.start_link(strategy: :one_for_one)
+  end
+
+  defp children(false) do
     # load the viewport configuration from config
     main_viewport_config = Application.get_env(:cargo, :viewport)
 
-    # start the application with the viewport
-    children = [
-      {Scenic, viewports: [main_viewport_config]}
-    ]
+    children(true) ++
+      [
+        {Scenic, viewports: [main_viewport_config]}
+      ]
+  end
 
-    Supervisor.start_link(children, strategy: :one_for_one)
+  defp children(true) do
+    []
   end
 end
